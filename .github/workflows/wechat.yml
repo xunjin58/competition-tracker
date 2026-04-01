@@ -27,7 +27,7 @@ jobs:
       - name: 运行公众号爬虫
         env:
           RSS_TOKEN: ${{ secrets.RSS_TOKEN }}
-        run: python wechat_scraper.py
+        run: python wechat_scraper.py || echo "爬虫失败（可能被限制IP），跳过本次更新"
 
       - name: 提交更新的数据
         run: |
