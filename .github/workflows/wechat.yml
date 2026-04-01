@@ -1,0 +1,38 @@
+name: 每日抓取公众号竞赛文章
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每天北京时间 10:00
+  workflow_dispatch:        # 允许手动触发
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行公众号爬虫
+        env:
+          RSS_TOKEN: ${{ secrets.RSS_TOKEN }}
+        run: python wechat_scraper.py
+
+      - name: 提交更新的数据
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/wechat_news.json
+          git diff --cached --quiet || git commit -m "chore: 自动更新公众号竞赛文章 $(date +'%Y-%m-%d')"
+          git push

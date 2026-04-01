@@ -184,6 +184,23 @@
       </div>
     </template>
   </div>
+
+  <!-- 学院公众号竞赛通知 -->
+  <div x-show="wechatNews.length > 0" class="mt-8">
+    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">学院公众号 · 竞赛通知</h2>
+    <div class="flex flex-col gap-2">
+      <template x-for="article in wechatNews" :key="article.link">
+        <a :href="article.link" target="_blank" rel="noopener"
+           class="flex items-start gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all">
+          <span class="text-xs text-gray-400 whitespace-nowrap mt-0.5" x-text="article.date"></span>
+          <span class="text-sm text-gray-800 leading-snug" x-text="article.title.replace(/^\[.*?\]\s*/, '')"></span>
+          <svg class="ml-auto w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </template>
+    </div>
+  </div>
 </main>
 
 <!-- 底部 -->
@@ -199,6 +216,7 @@ function app() {
   return {
     competitions: [],
     scraped: {},
+    wechatNews: [],
     updatedAt: '',
     search: '',
     sortBy: 'level',
@@ -217,15 +235,17 @@ function app() {
     levelOrder: { 'A+': 0, 'A': 1, 'B+': 2, 'B': 3, 'C': 4 },
 
     async init() {
-      const [compsResp, scrapedResp] = await Promise.all([
+      const [compsResp, scrapedResp, wechatResp] = await Promise.all([
         fetch('./data/competitions.json').then(r => r.json()).catch(() => []),
         fetch('./data/scraped.json').then(r => r.json()).catch(() => ({ updated_at: '', competitions: {} })),
+        fetch('./data/wechat_news.json').then(r => r.json()).catch(() => ({ articles: [] })),
       ]);
 
       this.competitions = compsResp;
       this.total = compsResp.length;
       this.scraped = scrapedResp.competitions || {};
       this.updatedAt = scrapedResp.updated_at || '';
+      this.wechatNews = wechatResp.articles || [];
     },
 
     get filtered() {
