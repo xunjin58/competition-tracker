@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>广软竞赛日历 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .badge-Aplus  { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+    .badge-A      { background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; }
+    .badge-Bplus  { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .badge-B      { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .badge-C      { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
+    .dot-Aplus { background:#f59e0b; }
+    .dot-A     { background:#3b82f6; }
+    .dot-Bplus { background:#22c55e; }
+    .dot-B     { background:#86efac; }
+    .dot-C     { background:#9ca3af; }
+    .card-hover { transition: box-shadow .15s, transform .15s; }
+    .card-hover:hover { box-shadow: 0 8px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
+    .deadline-urgent { color:#dc2626; font-weight:600; }
+    .deadline-soon   { color:#d97706; font-weight:600; }
+    .deadline-ok     { color:#16a34a; }
+    .deadline-none   { color:#9ca3af; }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:3px; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="app()" x-init="init()" x-cloak>
+
+<!-- 顶部导航 -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">竞</div>
+      <div>
+        <h1 class="font-bold text-gray-900 leading-tight">广软竞赛日历</h1>
+        <p class="text-xs text-gray-400">2026年综合竞赛目录 · 试行版</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 text-sm text-gray-500">
+      <span x-show="updatedAt">数据更新：<span class="text-gray-700 font-medium" x-text="updatedAt"></span></span>
+      <span x-show="!updatedAt" class="text-amber-500">暂无爬取数据</span>
+      <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium"
+            x-text="filtered.length + ' / ' + total + ' 场'"></span>
+    </div>
+  </div>
+</header>
+
+<!-- 工具栏 -->
+<div class="max-w-7xl mx-auto px-4 pt-4 pb-2">
+  <div class="bg-white rounded-xl border border-gray-200 p-3 flex flex-wrap gap-3 items-center">
+
+    <!-- 搜索框 -->
+    <div class="flex-1 min-w-[200px] relative">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input x-model="search" type="text" placeholder="搜索赛事名称..."
+             class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+    </div>
+
+    <!-- 级别筛选 -->
+    <div class="flex gap-1.5 flex-wrap">
+      <template x-for="lv in levels" :key="lv.key">
+        <button @click="toggleLevel(lv.key)"
+                :class="activeLevel.includes(lv.key) ? lv.active : lv.inactive"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                x-text="lv.label"></button>
+      </template>
+    </div>
+
+    <!-- 排序 -->
+    <select x-model="sortBy" class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+      <option value="level">按级别排序</option>
+      <option value="deadline">按截止时间</option>
+      <option value="name">按名称</option>
+    </select>
+
+    <!-- 只看有数据 -->
+    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+      <input type="checkbox" x-model="onlyWithData" class="w-4 h-4 rounded text-blue-500" />
+      仅显示已爬取
+    </label>
+  </div>
+</div>
+
+<!-- 统计条 -->
+<div class="max-w-7xl mx-auto px-4 py-2">
+  <div class="flex gap-3 flex-wrap">
+    <template x-for="lv in levels" :key="lv.key">
+      <div class="flex items-center gap-1.5 text-xs text-gray-500">
+        <span class="w-2 h-2 rounded-full" :class="'dot-' + lv.dotKey"></span>
+        <span x-text="lv.label + ' ' + countByLevel(lv.key)"></span>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<main class="max-w-7xl mx-auto px-4 pb-10">
+
+  <!-- 空状态 -->
+  <div x-show="filtered.length === 0" class="text-center py-20 text-gray-400">
+    <svg class="mx-auto w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-sm">没有匹配的赛事</p>
+  </div>
+
+  <!-- 卡片网格 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-2">
+    <template x-for="comp in filtered" :key="comp.id">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 card-hover flex flex-col gap-2">
+
+        <!-- 级别 + ID -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                :class="'badge-' + comp.levelKey"
+                x-text="comp.level + '级'"></span>
+          <span class="text-xs text-gray-300" x-text="'#' + comp.id"></span>
+        </div>
+
+        <!-- 名称 -->
+        <h3 class="text-sm font-semibold text-gray-800 leading-snug line-clamp-3"
+            x-text="comp.name"></h3>
+
+        <!-- 主办方 -->
+        <p class="text-xs text-gray-400 line-clamp-2" x-text="comp.organizer"></p>
+
+        <!-- 分隔线 -->
+        <div class="border-t border-gray-100 my-0.5"></div>
+
+        <!-- 爬取数据区 -->
+        <div class="flex flex-col gap-1 text-xs flex-1">
+
+          <!-- 报名截止 -->
+          <div class="flex items-start gap-1.5">
+            <span class="text-gray-400 whitespace-nowrap mt-0.5">报名截止</span>
+            <span x-show="comp.scraped?.registration_deadline"
+                  :class="deadlineClass(comp.scraped?.registration_deadline)"
+                  x-text="comp.scraped?.registration_deadline"></span>
+            <span x-show="!comp.scraped?.registration_deadline" class="deadline-none">待更新</span>
+          </div>
+
+          <!-- 作品提交 -->
+          <div class="flex items-start gap-1.5" x-show="comp.scraped?.submission_deadline">
+            <span class="text-gray-400 whitespace-nowrap mt-0.5">作品提交</span>
+            <span :class="deadlineClass(comp.scraped?.submission_deadline)"
+                  x-text="comp.scraped?.submission_deadline"></span>
+          </div>
+
+          <!-- 答辩/路演 -->
+          <div class="flex items-start gap-1.5" x-show="comp.scraped?.defense_time">
+            <span class="text-gray-400 whitespace-nowrap mt-0.5">路演答辩</span>
+            <span class="text-gray-600" x-text="comp.scraped?.defense_time"></span>
+          </div>
+
+          <!-- 参赛条件 -->
+          <div x-show="comp.scraped?.requirements" class="mt-1">
+            <p class="text-gray-400 mb-0.5">参赛条件</p>
+            <p class="text-gray-600 line-clamp-2" x-text="comp.scraped?.requirements"></p>
+          </div>
+
+          <!-- 奖励 -->
+          <div x-show="comp.scraped?.prize" class="mt-0.5">
+            <span class="text-amber-600" x-text="'奖励：' + comp.scraped?.prize"></span>
+          </div>
+        </div>
+
+        <!-- 链接按钮 -->
+        <a x-show="comp.scraped?.url"
+           :href="comp.scraped?.url" target="_blank" rel="noopener"
+           class="mt-auto text-center text-xs text-blue-600 hover:text-blue-800 hover:underline py-1 border border-blue-100 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+          查看详情 →
+        </a>
+        <div x-show="!comp.scraped?.url"
+             class="mt-auto text-center text-xs text-gray-300 py-1 border border-gray-100 rounded-lg">
+          暂无链接
+        </div>
+      </div>
+    </template>
+  </div>
+</main>
+
+<!-- 底部 -->
+<footer class="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-400">
+  广州软件学院大学生综合竞赛目录（2026年）试行版 · 数据来源：赛氪
+  <br class="sm:hidden"/>
+  <span class="hidden sm:inline"> · </span>
+  爬虫每两天自动更新 · 如有错误以官方公告为准
+</footer>
+
+<script>
+function app() {
+  return {
+    competitions: [],
+    scraped: {},
+    updatedAt: '',
+    search: '',
+    sortBy: 'level',
+    onlyWithData: false,
+    total: 0,
+    activeLevel: ['A+', 'A', 'B+', 'B', 'C'],
+
+    levels: [
+      { key: 'A+',  dotKey: 'Aplus', label: 'A+', active: 'bg-amber-500 text-white border-amber-500',   inactive: 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50' },
+      { key: 'A',   dotKey: 'A',     label: 'A',  active: 'bg-blue-500 text-white border-blue-500',     inactive: 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50' },
+      { key: 'B+',  dotKey: 'Bplus', label: 'B+', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-green-700 border-green-300 hover:bg-green-50' },
+      { key: 'B',   dotKey: 'B',     label: 'B',  active: 'bg-emerald-400 text-white border-emerald-400', inactive: 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50' },
+      { key: 'C',   dotKey: 'C',     label: 'C',  active: 'bg-gray-400 text-white border-gray-400',     inactive: 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50' },
+    ],
+
+    levelOrder: { 'A+': 0, 'A': 1, 'B+': 2, 'B': 3, 'C': 4 },
+
+    async init() {
+      const [compsResp, scrapedResp] = await Promise.all([
+        fetch('./data/competitions.json').then(r => r.json()).catch(() => []),
+        fetch('./data/scraped.json').then(r => r.json()).catch(() => ({ updated_at: '', competitions: {} })),
+      ]);
+
+      this.competitions = compsResp;
+      this.total = compsResp.length;
+      this.scraped = scrapedResp.competitions || {};
+      this.updatedAt = scrapedResp.updated_at || '';
+    },
+
+    get filtered() {
+      let list = this.competitions.map(c => ({
+        ...c,
+        levelKey: c.level.replace('+', 'plus'),
+        scraped: this.scraped[String(c.id)] || null,
+      }));
+
+      if (this.search.trim()) {
+        const q = this.search.trim().toLowerCase();
+        list = list.filter(c => c.name.toLowerCase().includes(q) || c.organizer.toLowerCase().includes(q));
+      }
+      if (this.activeLevel.length < 5) {
+        list = list.filter(c => this.activeLevel.includes(c.level));
+      }
+      if (this.onlyWithData) {
+        list = list.filter(c => c.scraped && Object.keys(c.scraped).length > 0);
+      }
+
+      list.sort((a, b) => {
+        if (this.sortBy === 'level') {
+          return (this.levelOrder[a.level] ?? 9) - (this.levelOrder[b.level] ?? 9) || a.id - b.id;
+        }
+        if (this.sortBy === 'deadline') {
+          const da = this.parseDate(a.scraped?.registration_deadline);
+          const db = this.parseDate(b.scraped?.registration_deadline);
+          if (!da && !db) return a.id - b.id;
+          if (!da) return 1;
+          if (!db) return -1;
+          return da - db;
+        }
+        return a.name.localeCompare(b.name, 'zh');
+      });
+
+      return list;
+    },
+
+    toggleLevel(lv) {
+      if (this.activeLevel.includes(lv)) {
+        if (this.activeLevel.length > 1) this.activeLevel = this.activeLevel.filter(x => x !== lv);
+      } else {
+        this.activeLevel.push(lv);
+      }
+    },
+
+    countByLevel(lv) {
+      return this.competitions.filter(c => c.level === lv).length;
+    },
+
+    parseDate(str) {
+      if (!str) return null;
+      const clean = str.replace(/年|月/g, '-').replace(/日/g, '').trim();
+      const d = new Date(clean);
+      return isNaN(d) ? null : d;
+    },
+
+    deadlineClass(str) {
+      const d = this.parseDate(str);
+      if (!d) return 'deadline-none';
+      const now = new Date();
+      const diff = (d - now) / (1000 * 60 * 60 * 24);
+      if (diff < 0) return 'deadline-none line-through';
+      if (diff <= 7) return 'deadline-urgent';
+      if (diff <= 30) return 'deadline-soon';
+      return 'deadline-ok';
+    },
+  }
+}
+</script>
+</body>
+</html>
