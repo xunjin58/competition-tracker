@@ -48,7 +48,7 @@ def search_saikr(name: str):
             continue
         query = clean_name[:length]
         try:
-            resp = SESSION.get(search_url, params={"search": query}, timeout=15)
+            resp = SESSION.get(search_url, params={"search": query}, timeout=(8, 20))
             resp.raise_for_status()
         except requests.RequestException as e:
             print(f"  [搜索失败] {name}: {e}")
