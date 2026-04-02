@@ -4,152 +4,328 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>广软竞赛日历 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
+    :root {
+      --cream:        #F7F3EE;
+      --warm-white:   #FEFCF9;
+      --ink:          #1C1714;
+      --ink-mid:      #3D3530;
+      --muted:        #8C8078;
+      --border:       #E2D9CF;
+      --border-light: #EDE8E2;
+      --accent:       #B91C1C;
+      --accent-hover: #991B1B;
+      --amber:        #B45309;
+      --amber-bg:     #FFFBEB;
+      --green:        #166534;
+      --green-bg:     #F0FDF4;
+    }
+
     [x-cloak] { display: none !important; }
-    body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-    .badge-Aplus  { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
-    .badge-A      { background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; }
-    .badge-Bplus  { background:#dcfce7; color:#166534; border:1px solid #86efac; }
-    .badge-B      { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
-    .badge-C      { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
-    .dot-Aplus { background:#f59e0b; }
-    .dot-A     { background:#3b82f6; }
-    .dot-Bplus { background:#22c55e; }
-    .dot-B     { background:#86efac; }
-    .dot-C     { background:#9ca3af; }
-    .card-hover { transition: box-shadow .15s, transform .15s; }
-    .card-hover:hover { box-shadow: 0 8px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
-    .deadline-urgent { color:#dc2626; font-weight:600; }
-    .deadline-soon   { color:#d97706; font-weight:600; }
-    .deadline-ok     { color:#16a34a; }
-    .deadline-none   { color:#9ca3af; }
-    ::-webkit-scrollbar { width:6px; }
-    ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:3px; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* Grain texture overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .018;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .serif { font-family: "Noto Serif SC", "STSong", "SimSun", serif; }
+
+    /* ── Level badges ── */
+    .badge-Aplus { background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; }
+    .badge-A     { background:#FFF7ED; color:#9A3412; border:1px solid #FED7AA; }
+    .badge-Bplus { background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; }
+    .badge-B     { background:#F7FEE7; color:#3F6212; border:1px solid #D9F99D; }
+    .badge-C     { background:#FAFAF9; color:#57534E; border:1px solid #D6D3D1; }
+
+    /* ── Level indicator dots ── */
+    .dot-Aplus { background:#DC2626; }
+    .dot-A     { background:#EA580C; }
+    .dot-Bplus { background:#16A34A; }
+    .dot-B     { background:#65A30D; }
+    .dot-C     { background:#A8A29E; }
+
+    /* ── Card ── */
+    .card-hover {
+      transition: box-shadow .2s ease, transform .18s ease, border-color .2s ease;
+    }
+    .card-hover:hover {
+      box-shadow: 0 6px 24px rgba(28, 23, 20, .09);
+      transform: translateY(-2px);
+      border-color: #C9BCB1;
+    }
+
+    /* ── Deadline states ── */
+    .deadline-urgent { color: var(--accent);  font-weight: 600; }
+    .deadline-soon   { color: var(--amber);   font-weight: 600; }
+    .deadline-ok     { color: var(--green); }
+    .deadline-none   { color: #A8A29E; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── Author tag ── */
+    .author-tag {
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+    }
+    .author-tag:hover { opacity: .82; transform: translateY(-1px); }
+
+    /* ── WeChat modal ── */
+    .wechat-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(28, 23, 20, .45);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .wechat-modal {
+      background: var(--warm-white);
+      border-radius: 14px;
+      padding: 32px 40px;
+      min-width: 270px;
+      box-shadow: 0 28px 72px rgba(28, 23, 20, .18);
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .wechat-id {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: var(--ink);
+      margin: 14px 0 4px;
+      font-family: "Noto Serif SC", serif;
+    }
+    .copy-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 28px;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      font-family: "Noto Sans SC", sans-serif;
+      letter-spacing: .03em;
+    }
+    .copy-btn:hover { background: var(--accent-hover); }
+    .copy-toast { font-size: .8rem; color: var(--green); margin-top: 10px; height: 1.2em; }
+
+    /* ── Form controls ── */
+    .ctrl-input {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: "Noto Sans SC", sans-serif;
+      color: var(--ink);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .ctrl-input:focus {
+      outline: none;
+      border-color: #B91C1C;
+      box-shadow: 0 0 0 3px rgba(185,28,28,.1);
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    /* ── Level filter buttons ── */
+    .lvl-btn {
+      padding: 5px 14px;
+      border-radius: 7px;
+      font-size: .75rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: all .15s;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+
+    /* ── Section divider ── */
+    .section-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-mark::before {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* ── Wechat article card accent ── */
+    .wechat-card-inner {
+      border-left: 3px solid #FDA4AF;
+    }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen" x-data="app()" x-init="init()" x-cloak>
+<body x-data="app()" x-init="init()" x-cloak>
 
-<!-- 顶部导航 -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+<!-- ── 顶部导航 ── -->
+<header style="background:var(--warm-white); border-bottom:1px solid var(--border);"
+        class="sticky top-0 z-30" style="box-shadow:0 1px 8px rgba(28,23,20,.04);">
+  <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+
+    <!-- Logo -->
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">竞</div>
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold serif"
+           style="background:var(--accent); letter-spacing:.02em; flex-shrink:0;">竞</div>
       <div>
-        <h1 class="font-bold text-gray-900 leading-tight">广软竞赛日历</h1>
-        <p class="text-xs text-gray-400">2026年综合竞赛目录 · 试行版</p>
+        <h1 class="font-bold leading-tight serif" style="color:var(--ink); font-size:1rem; letter-spacing:.02em;">广软竞赛日历</h1>
+        <p style="font-size:.7rem; color:var(--muted); letter-spacing:.04em;">2026年综合竞赛目录 · 试行版</p>
       </div>
     </div>
-    <div class="flex items-center gap-4 text-sm text-gray-500">
-      <span x-show="updatedAt">数据更新：<span class="text-gray-700 font-medium" x-text="updatedAt"></span></span>
-      <span x-show="!updatedAt" class="text-amber-500">暂无爬取数据</span>
-      <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium"
+
+    <!-- Right side info -->
+    <div class="flex items-center gap-4 text-sm" style="color:var(--muted);">
+      <span x-show="updatedAt" style="font-size:.8rem;">
+        数据更新：<span style="color:var(--ink-mid); font-weight:500;" x-text="updatedAt"></span>
+      </span>
+      <span x-show="!updatedAt" style="color:var(--amber); font-size:.8rem; font-weight:500;">暂无爬取数据</span>
+
+      <span style="background:#FEF2F2; color:var(--accent); border:1px solid #FECACA; padding:2px 10px; border-radius:20px; font-size:.72rem; font-weight:600;"
             x-text="filtered.length + ' / ' + total + ' 场'"></span>
+
+      <span class="author-tag"
+            style="background:var(--accent); color:#fff; padding:4px 14px; border-radius:20px; font-size:.72rem; font-weight:600; letter-spacing:.04em;"
+            @click="showWechat = true">循进制作</span>
     </div>
   </div>
 </header>
 
-<!-- 工具栏 -->
-<div class="max-w-7xl mx-auto px-4 pt-4 pb-2">
-  <div class="bg-white rounded-xl border border-gray-200 p-3 flex flex-wrap gap-3 items-center">
+<!-- ── 工具栏 ── -->
+<div class="max-w-7xl mx-auto px-5 pt-5 pb-2">
+  <div class="toolbar p-3 flex flex-wrap gap-3 items-center">
 
     <!-- 搜索框 -->
     <div class="flex-1 min-w-[200px] relative">
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color:var(--muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
-      <input x-model="search" type="text" placeholder="搜索赛事名称..."
-             class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+      <input x-model="search" type="text" placeholder="搜索赛事名称或主办方…"
+             class="ctrl-input w-full pl-9 pr-4 py-2 text-sm" style="font-size:.875rem;" />
     </div>
 
     <!-- 级别筛选 -->
     <div class="flex gap-1.5 flex-wrap">
       <template x-for="lv in levels" :key="lv.key">
         <button @click="toggleLevel(lv.key)"
-                :class="activeLevel.includes(lv.key) ? lv.active : lv.inactive"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                class="lvl-btn"
+                :style="activeLevel.includes(lv.key) ? lv.activeStyle : lv.inactiveStyle"
                 x-text="lv.label"></button>
       </template>
     </div>
 
     <!-- 排序 -->
-    <select x-model="sortBy" class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+    <select x-model="sortBy"
+            class="ctrl-input text-sm px-3 py-2" style="font-size:.875rem; min-width:130px;">
       <option value="level">按级别排序</option>
       <option value="deadline">按截止时间</option>
       <option value="name">按名称</option>
     </select>
 
     <!-- 只看有数据 -->
-    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-      <input type="checkbox" x-model="onlyWithData" class="w-4 h-4 rounded text-blue-500" />
+    <label class="flex items-center gap-2 text-sm cursor-pointer select-none" style="color:var(--ink-mid); font-size:.875rem;">
+      <input type="checkbox" x-model="onlyWithData"
+             class="w-4 h-4 rounded" style="accent-color:var(--accent);" />
       仅显示已爬取
     </label>
 
     <!-- 隐藏已过期 -->
-    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-      <input type="checkbox" x-model="hideExpired" class="w-4 h-4 rounded text-red-400" />
+    <label class="flex items-center gap-2 text-sm cursor-pointer select-none" style="color:var(--ink-mid); font-size:.875rem;">
+      <input type="checkbox" x-model="hideExpired"
+             class="w-4 h-4 rounded" style="accent-color:var(--accent);" />
       隐藏已过期
     </label>
   </div>
 </div>
 
-<!-- 统计条 -->
-<div class="max-w-7xl mx-auto px-4 py-2">
-  <div class="flex gap-3 flex-wrap">
+<!-- ── 统计条 ── -->
+<div class="max-w-7xl mx-auto px-5 py-2">
+  <div class="flex gap-4 flex-wrap">
     <template x-for="lv in levels" :key="lv.key">
-      <div class="flex items-center gap-1.5 text-xs text-gray-500">
+      <div class="flex items-center gap-1.5" style="font-size:.75rem; color:var(--muted);">
         <span class="w-2 h-2 rounded-full" :class="'dot-' + lv.dotKey"></span>
-        <span x-text="lv.label + ' ' + countByLevel(lv.key)"></span>
+        <span x-text="lv.label + '&nbsp;' + countByLevel(lv.key)"></span>
       </div>
     </template>
   </div>
 </div>
 
-<!-- 主内容 -->
-<main class="max-w-7xl mx-auto px-4 pb-10">
+<!-- ── 主内容 ── -->
+<main class="max-w-7xl mx-auto px-5 pb-12">
 
   <!-- 学院公众号竞赛通知 -->
-  <div x-show="filteredWechat.length > 0" class="mt-2 mb-6">
-    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-      学院公众号 · 竞赛通知
-      <span class="ml-2 text-xs font-normal text-gray-400" x-text="'共 ' + filteredWechat.length + ' 条'"></span>
+  <div x-show="filteredWechat.length > 0" class="mt-2 mb-8">
+    <h2 class="flex items-center gap-2 mb-4" style="font-size:.78rem; font-weight:600; color:var(--muted); letter-spacing:.1em; text-transform:uppercase;">
+      <span class="section-mark">学院公众号 · 竞赛通知</span>
+      <span style="font-weight:400; color:#B8ADA5;" x-text="'共 ' + filteredWechat.length + ' 条'"></span>
     </h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       <template x-for="article in filteredWechat" :key="article.link">
-        <div class="bg-white rounded-xl border border-purple-100 p-4 card-hover flex flex-col gap-2">
+        <div class="wechat-card-inner bg-white rounded-xl p-4 card-hover flex flex-col gap-2"
+             style="border:1px solid #FCE7F3; border-left:3px solid #FDA4AF;">
           <div class="flex items-center justify-between">
-            <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-purple-100 text-purple-700">公众号</span>
-            <span class="text-xs text-gray-300" x-text="article.date"></span>
+            <span style="font-size:.7rem; padding:2px 8px; border-radius:12px; font-weight:600; background:#FFF1F2; color:#BE185D; border:1px solid #FBCFE8;">公众号</span>
+            <span style="font-size:.7rem; color:#C9BCB1;" x-text="article.date"></span>
           </div>
-          <h3 class="text-sm font-semibold text-gray-800 leading-snug line-clamp-3" x-text="article.title"></h3>
-          <div class="border-t border-gray-100 my-0.5"></div>
-          <div class="flex flex-col gap-1 text-xs flex-1">
+          <h3 style="font-size:.825rem; font-weight:600; color:var(--ink); line-height:1.45;" class="line-clamp-3" x-text="article.title"></h3>
+          <div style="border-top:1px solid var(--border-light); margin:.1rem 0;"></div>
+          <div class="flex flex-col gap-1 text-xs flex-1" style="font-size:.775rem;">
             <div class="flex items-start gap-1.5">
-              <span class="text-gray-400 whitespace-nowrap mt-0.5">报名截止</span>
+              <span style="color:var(--muted); white-space:nowrap; margin-top:.1rem;">报名截止</span>
               <span x-show="article.deadline" :class="deadlineClass(article.deadline)" x-text="article.deadline"></span>
               <span x-show="!article.deadline" class="deadline-none">未注明</span>
             </div>
             <div x-show="article.competition_time" class="flex items-start gap-1.5">
-              <span class="text-gray-400 whitespace-nowrap mt-0.5">比赛时间</span>
-              <span class="text-gray-600" x-text="article.competition_time"></span>
+              <span style="color:var(--muted); white-space:nowrap; margin-top:.1rem;">比赛时间</span>
+              <span style="color:var(--ink-mid);" x-text="article.competition_time"></span>
             </div>
             <div x-show="article.requirements" class="mt-0.5">
-              <p class="text-gray-400 mb-0.5">参赛对象</p>
-              <p class="text-gray-600 line-clamp-2" x-text="article.requirements"></p>
+              <p style="color:var(--muted); margin-bottom:.2rem;">参赛对象</p>
+              <p style="color:var(--ink-mid);" class="line-clamp-2" x-text="article.requirements"></p>
             </div>
             <div x-show="article.materials" class="mt-0.5">
-              <p class="text-gray-400 mb-0.5">报名材料</p>
-              <p class="text-gray-600 line-clamp-2" x-text="article.materials"></p>
+              <p style="color:var(--muted); margin-bottom:.2rem;">报名材料</p>
+              <p style="color:var(--ink-mid);" class="line-clamp-2" x-text="article.materials"></p>
             </div>
             <div x-show="article.contact_email" class="mt-0.5">
-              <span class="text-gray-400">提交邮箱 </span>
+              <span style="color:var(--muted);">提交邮箱 </span>
               <a :href="'mailto:' + article.contact_email"
-                 class="text-blue-500 hover:underline" x-text="article.contact_email"></a>
+                 style="color:var(--accent);" class="hover:underline" x-text="article.contact_email"></a>
             </div>
           </div>
           <a :href="article.link" target="_blank" rel="noopener"
-             class="mt-auto text-center text-xs text-purple-600 hover:text-purple-800 hover:underline py-1 border border-purple-100 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
+             style="margin-top:auto; text-align:center; font-size:.75rem; color:#BE185D; padding:5px; border:1px solid #FBCFE8; border-radius:8px; background:#FFF1F2; transition:background .15s;"
+             class="hover:opacity-80">
             查看原文 →
           </a>
         </div>
@@ -158,42 +334,49 @@
   </div>
 
   <!-- 空状态 -->
-  <div x-show="filtered.length === 0" class="text-center py-20 text-gray-400">
-    <svg class="mx-auto w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div x-show="filtered.length === 0" class="text-center py-20" style="color:var(--muted);">
+    <svg class="mx-auto w-12 h-12 mb-3" style="opacity:.25;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
-    <p class="text-sm">没有匹配的赛事</p>
+    <p style="font-size:.875rem;">没有匹配的赛事</p>
   </div>
 
-  <!-- 卡片网格 -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-2">
+  <!-- ── 赛事卡片网格 ── -->
+  <div x-show="filtered.length > 0" class="mb-4">
+    <h2 class="flex items-center gap-2 mb-4" style="font-size:.78rem; font-weight:600; color:var(--muted); letter-spacing:.1em; text-transform:uppercase;">
+      <span class="section-mark">赛事列表</span>
+    </h2>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
     <template x-for="comp in filtered" :key="comp.id">
-      <div class="bg-white rounded-xl border border-gray-200 p-4 card-hover flex flex-col gap-2">
+      <div class="bg-white rounded-xl p-4 card-hover flex flex-col gap-2"
+           style="border:1px solid var(--border-light);">
 
         <!-- 级别 + ID -->
         <div class="flex items-center justify-between">
           <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
                 :class="'badge-' + comp.levelKey"
                 x-text="comp.level + '级'"></span>
-          <span class="text-xs text-gray-300" x-text="'#' + comp.id"></span>
+          <span style="font-size:.7rem; color:#C9BCB1;" x-text="'#' + comp.id"></span>
         </div>
 
         <!-- 名称 -->
-        <h3 class="text-sm font-semibold text-gray-800 leading-snug line-clamp-3"
+        <h3 style="font-size:.825rem; font-weight:600; color:var(--ink); line-height:1.45;"
+            class="line-clamp-3"
             x-text="comp.name"></h3>
 
         <!-- 主办方 -->
-        <p class="text-xs text-gray-400 line-clamp-2" x-text="comp.organizer"></p>
+        <p style="font-size:.75rem; color:var(--muted);" class="line-clamp-2" x-text="comp.organizer"></p>
 
         <!-- 分隔线 -->
-        <div class="border-t border-gray-100 my-0.5"></div>
+        <div style="border-top:1px solid var(--border-light); margin:.1rem 0;"></div>
 
         <!-- 爬取数据区 -->
-        <div class="flex flex-col gap-1 text-xs flex-1">
+        <div class="flex flex-col gap-1 flex-1" style="font-size:.775rem;">
 
           <!-- 报名截止 -->
           <div class="flex items-start gap-1.5">
-            <span class="text-gray-400 whitespace-nowrap mt-0.5">报名截止</span>
+            <span style="color:var(--muted); white-space:nowrap; margin-top:.1rem;">报名截止</span>
             <span x-show="comp.scraped?.registration_deadline"
                   :class="deadlineClass(comp.scraped?.registration_deadline)"
                   x-text="comp.scraped?.registration_deadline"></span>
@@ -202,37 +385,38 @@
 
           <!-- 作品提交 -->
           <div class="flex items-start gap-1.5" x-show="comp.scraped?.submission_deadline">
-            <span class="text-gray-400 whitespace-nowrap mt-0.5">作品提交</span>
+            <span style="color:var(--muted); white-space:nowrap; margin-top:.1rem;">作品提交</span>
             <span :class="deadlineClass(comp.scraped?.submission_deadline)"
                   x-text="comp.scraped?.submission_deadline"></span>
           </div>
 
           <!-- 答辩/路演 -->
           <div class="flex items-start gap-1.5" x-show="comp.scraped?.defense_time">
-            <span class="text-gray-400 whitespace-nowrap mt-0.5">路演答辩</span>
-            <span class="text-gray-600" x-text="comp.scraped?.defense_time"></span>
+            <span style="color:var(--muted); white-space:nowrap; margin-top:.1rem;">路演答辩</span>
+            <span style="color:var(--ink-mid);" x-text="comp.scraped?.defense_time"></span>
           </div>
 
           <!-- 参赛条件 -->
           <div x-show="comp.scraped?.requirements" class="mt-1">
-            <p class="text-gray-400 mb-0.5">参赛条件</p>
-            <p class="text-gray-600 line-clamp-2" x-text="comp.scraped?.requirements"></p>
+            <p style="color:var(--muted); margin-bottom:.2rem;">参赛条件</p>
+            <p style="color:var(--ink-mid);" class="line-clamp-2" x-text="comp.scraped?.requirements"></p>
           </div>
 
           <!-- 奖励 -->
           <div x-show="comp.scraped?.prize" class="mt-0.5">
-            <span class="text-amber-600" x-text="'奖励：' + comp.scraped?.prize"></span>
+            <span style="color:var(--amber); font-weight:500;" x-text="'奖励：' + comp.scraped?.prize"></span>
           </div>
         </div>
 
         <!-- 链接按钮 -->
         <a x-show="comp.scraped?.url"
            :href="comp.scraped?.url" target="_blank" rel="noopener"
-           class="mt-auto text-center text-xs text-blue-600 hover:text-blue-800 hover:underline py-1 border border-blue-100 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+           style="margin-top:auto; text-align:center; font-size:.75rem; color:var(--accent); padding:5px 0; border:1px solid #FECACA; border-radius:8px; background:#FEF2F2; transition:background .15s, color .15s;"
+           class="hover:opacity-80">
           查看详情 →
         </a>
         <div x-show="!comp.scraped?.url"
-             class="mt-auto text-center text-xs text-gray-300 py-1 border border-gray-100 rounded-lg">
+             style="margin-top:auto; text-align:center; font-size:.75rem; color:#C9BCB1; padding:5px 0; border:1px solid var(--border-light); border-radius:8px;">
           暂无链接
         </div>
       </div>
@@ -241,8 +425,19 @@
 
 </main>
 
-<!-- 底部 -->
-<footer class="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-400">
+<!-- ── 联系作者弹窗 ── -->
+<div x-show="showWechat" class="wechat-modal-overlay" @click.self="showWechat = false">
+  <div class="wechat-modal">
+    <div style="font-size:.9rem; font-weight:600; color:var(--ink-mid);">联系作者</div>
+    <div class="wechat-id">XJ885k</div>
+    <div style="font-size:.75rem; color:var(--muted); margin-bottom:16px;">微信号</div>
+    <button class="copy-btn" @click="copyWechat()">复制微信号</button>
+    <div class="copy-toast" x-text="copyTip"></div>
+  </div>
+</div>
+
+<!-- ── 底部 ── -->
+<footer style="border-top:1px solid var(--border); background:var(--warm-white); padding:16px 0; text-align:center; font-size:.75rem; color:var(--muted); letter-spacing:.02em;">
   广州软件学院大学生综合竞赛目录（2026年）试行版 · 数据来源：赛氪
   <br class="sm:hidden"/>
   <span class="hidden sm:inline"> · </span>
@@ -262,13 +457,35 @@ function app() {
     hideExpired: true,
     total: 0,
     activeLevel: ['A+', 'A', 'B+', 'B', 'C'],
+    showWechat: false,
+    copyTip: '',
 
     levels: [
-      { key: 'A+',  dotKey: 'Aplus', label: 'A+', active: 'bg-amber-500 text-white border-amber-500',   inactive: 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50' },
-      { key: 'A',   dotKey: 'A',     label: 'A',  active: 'bg-blue-500 text-white border-blue-500',     inactive: 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50' },
-      { key: 'B+',  dotKey: 'Bplus', label: 'B+', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-green-700 border-green-300 hover:bg-green-50' },
-      { key: 'B',   dotKey: 'B',     label: 'B',  active: 'bg-emerald-400 text-white border-emerald-400', inactive: 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50' },
-      { key: 'C',   dotKey: 'C',     label: 'C',  active: 'bg-gray-400 text-white border-gray-400',     inactive: 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50' },
+      {
+        key: 'A+', dotKey: 'Aplus', label: 'A+',
+        activeStyle:   'background:#DC2626; color:#fff; border-color:#DC2626;',
+        inactiveStyle: 'background:#fff; color:#991B1B; border-color:#FECACA;',
+      },
+      {
+        key: 'A',  dotKey: 'A',     label: 'A',
+        activeStyle:   'background:#EA580C; color:#fff; border-color:#EA580C;',
+        inactiveStyle: 'background:#fff; color:#9A3412; border-color:#FED7AA;',
+      },
+      {
+        key: 'B+', dotKey: 'Bplus', label: 'B+',
+        activeStyle:   'background:#16A34A; color:#fff; border-color:#16A34A;',
+        inactiveStyle: 'background:#fff; color:#166534; border-color:#BBF7D0;',
+      },
+      {
+        key: 'B',  dotKey: 'B',     label: 'B',
+        activeStyle:   'background:#65A30D; color:#fff; border-color:#65A30D;',
+        inactiveStyle: 'background:#fff; color:#3F6212; border-color:#D9F99D;',
+      },
+      {
+        key: 'C',  dotKey: 'C',     label: 'C',
+        activeStyle:   'background:#78716C; color:#fff; border-color:#78716C;',
+        inactiveStyle: 'background:#fff; color:#57534E; border-color:#D6D3D1;',
+      },
     ],
 
     levelOrder: { 'A+': 0, 'A': 1, 'B+': 2, 'B': 3, 'C': 4 },
@@ -363,6 +580,15 @@ function app() {
       const clean = str.replace(/年|月/g, '-').replace(/日/g, '').trim();
       const d = new Date(clean);
       return isNaN(d) ? null : d;
+    },
+
+    copyWechat() {
+      navigator.clipboard.writeText('XJ885k').then(() => {
+        this.copyTip = '已复制！';
+        setTimeout(() => { this.copyTip = ''; }, 2000);
+      }).catch(() => {
+        this.copyTip = '请手动复制：XJ885k';
+      });
     },
 
     deadlineClass(str) {
