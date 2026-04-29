@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-27 05:03",
+  "updated_at": "2026-04-29 05:22",
   "competitions": {
     "1": {
       "source": "saikr",
@@ -999,7 +999,15 @@
       "registration_deadline": "2024.11.30",
       "status": "报名结束"
     },
-    "134": {},
+    "134": {
+      "source": "saikr",
+      "url": "https://www.saikr.com/vse/58073",
+      "title": "2026 年 “衡信杯” 全国大学生智慧税务大赛（第十二届）",
+      "organizer": "“衡信杯” 全国大学生智慧税务大赛组委会",
+      "level": "全国性",
+      "registration_deadline": "2026.09.25",
+      "status": "正在报名"
+    },
     "135": {
       "source": "saikr",
       "url": "https://www.saikr.com/vse/55360",
@@ -1069,7 +1077,15 @@
       "competition_time": "2023.12.03 ～ 2023.12.03",
       "status": "比赛结束"
     },
-    "145": {},
+    "145": {
+      "source": "saikr",
+      "url": "https://www.saikr.com/vse/58074",
+      "title": "2026“网中网杯”大学生财务决策大赛",
+      "organizer": "中国商业会计学会",
+      "level": "全国性",
+      "registration_deadline": "2026.04.19",
+      "status": "报名结束"
+    },
     "146": {
       "source": "saikr",
       "url": "https://www.saikr.com/vse/47660",
