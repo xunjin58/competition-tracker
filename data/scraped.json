@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-27 05:49",
+  "updated_at": "2026-06-29 06:31",
   "competitions": {
     "1": {
       "source": "saikr",
@@ -303,7 +303,14 @@
       "registration_deadline": "2025.07.31",
       "status": "报名结束"
     },
-    "34": {},
+    "34": {
+      "source": "saikr",
+      "url": "https://www.saikr.com/vse/59189",
+      "title": "2026 年全国本科院校税收风险管控案例大赛",
+      "organizer": "全国本科院校税收风险管控案例大赛组委会",
+      "level": "全国性",
+      "status": "报名结束"
+    },
     "35": {
       "source": "saikr",
       "url": "https://www.saikr.com/vse/54679",
